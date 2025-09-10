@@ -1,0 +1,43 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "lin-mod"
+version = "0.0.1"
+description = "stochastic gradient descent implementation for modeling linear data"
+authors = [
+  { name = "Tyrike Daniels" },
+]
+
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    
+]
+dependencies = [
+    "loguru",
+    "pip",
+    "pytest",
+    "python-dotenv",
+    "ruff",
+    "tqdm",
+    "typer",
+]
+requires-python = ">=3.10,<3.13"
+
+[tool.poetry]
+package-mode = false
+
+[tool.ruff]
+line-length = 99
+src = ["lin-mod"]
+include = ["pyproject.toml", "lin-mod/**/*.py"]
+
+[tool.ruff.lint]
+extend-select = ["I"]  # Add import sorting
+
+[tool.ruff.lint.isort]
+known-first-party = ["lin-mod"]
+force-sort-within-sections = true
+
