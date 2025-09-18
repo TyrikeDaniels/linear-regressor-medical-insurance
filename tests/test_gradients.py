@@ -1,15 +1,14 @@
-from loguru import logger
 import pytest
 import numpy as np
 
-from lin_mod.modeling.linear_model import BGDRegressorCustom
+from lin_mod.modeling.linear_model import SGDRegressorCustom
 
 
 # --- Fixtures ---
 @pytest.fixture
 def model():
     """Fresh instance of linear BGD regressor for each test."""
-    return BGDRegressorCustom()
+    return SGDRegressorCustom()
 
 
 @pytest.fixture
@@ -57,7 +56,6 @@ def numerical_gradient(model, x, y, w, b, eps=1e-5):
     loss_pos = loss_fn(model, x, y, w, b + eps)
     loss_neg = loss_fn(model, x, y, w, b - eps)
     dj_db = (loss_pos - loss_neg) / (2 * eps)
-
     return dj_dw, dj_db
 
 
@@ -75,7 +73,6 @@ def test_compute_gradient_matches_numerical(model, data_factory, loss):
     model.configure(
         loss_function=loss,
         learning_rate=2e-4,
-        # make sure regularization is disabled or update numerical_gradient
         regularization=None
     )
 

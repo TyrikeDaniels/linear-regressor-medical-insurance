@@ -9,22 +9,25 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, OrdinalEncoder
 
-from lin_mod.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
+from .config import PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 app = typer.Typer()
 
 @app.command()
 def process(
-        input_path: Path = typer.Option(RAW_DATA_DIR, help="Raw data path"),
-        output_path: Path =  typer.Option(PROCESSED_DATA_DIR, help="Download path"),
+    input_path: Path = typer.Option(RAW_DATA_DIR, help="Raw data path."),
+    output_path: Path =  typer.Option(PROCESSED_DATA_DIR, help="Download path."),
 ):
-    """Pass cleaned data into pipeline."""
+    """
+    Pass raw data into pipeline.
+    """
 
-    csv_file_input = input_path / "insurance.csv"
-    csv_file_output = output_path / "insurance.csv"
+    raw_path = input_path / "insurance.csv"
+    labels_path = output_path / "labels.csv"
+    features_path = output_path / "features.csv"
 
-    logger.info(f"Importing CSV from {csv_file_input} into DataFrame object...")
-    df = pd.read_csv(csv_file_input)
+    logger.info(f"Importing CSV from {raw_path} into DataFrame object.")
+    df = pd.read_csv(raw_path)
 
     y = df.iloc[:, -1:]
     x = df.iloc[:, :-1]
@@ -60,7 +63,7 @@ def process(
         ("preprocessor", preprocessor)
     ])
 
-    logger.info(f"Passing raw data through pipeline...")
+    logger.info(f"Passing raw data through pipeline.")
     processed_x = pipeline.fit_transform(x)
 
     ohe_columns = pipeline.named_steps['preprocessor'] \
@@ -71,10 +74,10 @@ def process(
     temp_x = pd.DataFrame(processed_x, columns=all_columns)
     temp_y = y.reset_index(drop=True)
 
-    processed_df = pd.concat([temp_x, temp_y], axis=1)
-
-    processed_df.to_csv(csv_file_output)
-    logger.success(f"Processing complete. Processed data has been sent to {csv_file_output}.")
+    logger.info(f"Processing labels and features into CSV file at {output_path}.")
+    temp_x.to_csv(features_path, index=False)
+    temp_y.to_csv(labels_path, index=False)
+    logger.success(f"Processing complete.")
 
 if __name__ == "__main__":
     app()

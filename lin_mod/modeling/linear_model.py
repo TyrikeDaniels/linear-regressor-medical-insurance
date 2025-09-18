@@ -115,7 +115,7 @@ class BaseRegressor:
                    and n is the number of features. Must be numeric.
 
            Returns:
-               np.ndarray: Predicted values of shape (m,)
+               np.ndarray: Predicted values of shape (m, 1)
 
            Raises:
                ModelNotFittedError: If the model has not been trained (weights and bias are None).
@@ -165,12 +165,12 @@ class BGDRegressorCustom(BaseRegressor):
 
         Parameters:
             x (np.ndarray): Feature matrix (m, n)
-            y (np.ndarray): Target values (m,)
-            w (np.ndarray): Current weights (n,)
+            y (np.ndarray): Target values (m, 1)
+            w (np.ndarray): Current weights (n, 1)
             b (float): Current bias term
 
         Returns:
-            dj_dw (np.ndarray): Gradient with respect to weights (n,)
+            dj_dw (np.ndarray): Gradient with respect to weights (n, 1)
             dj_db (float): Gradient with respect to bias (scalar)
         """
 
@@ -246,8 +246,8 @@ class BGDRegressorCustom(BaseRegressor):
 
         Parameters:
             x (np.ndarray): Feature matrix (m, n)
-            y (np.ndarray): Target values (m,)
-            w (np.ndarray): Weight vector (n,)
+            y (np.ndarray): Target values (m, 1)
+            w (np.ndarray): Weight vector (n, 1)
             b (float): Bias term
 
         Returns:
@@ -389,7 +389,7 @@ class SGDRegressorCustom(BaseRegressor):
     def _compute_gradient(
         self,
         x : np.ndarray,
-        y : float,
+        y : np.ndarray,
         w : np.ndarray,
         b : float
     ) -> tuple[np.ndarray, float]:
@@ -398,12 +398,12 @@ class SGDRegressorCustom(BaseRegressor):
 
         Parameters:
             x (np.ndarray): Feature matrix (m, n)
-            y (float): Target values (m,)
-            w (np.ndarray): Current weights (n,)
+            y (np.ndarray): Target values (m, 1)
+            w (np.ndarray): Current weights (n, 1)
             b (float): Current bias term
 
         Returns:
-            dj_dw (np.ndarray): Gradient with respect to weights (n,)
+            dj_dw (np.ndarray): Gradient with respect to weights (n, 1)
             dj_db (float): Gradient with respect to bias (scalar)
         """
 
@@ -413,6 +413,9 @@ class SGDRegressorCustom(BaseRegressor):
         # Parameterized function default
         f_wb = 0.0
 
+        # Number of samples
+        m = x.shape[0]
+
         # Identify loss function and pass logit to compute error term (used in computing derivative)
         if self.loss_function == "binary_cross_entropy": # binary cross entropy
             f_wb = self._sigmoid(z)
@@ -421,8 +424,8 @@ class SGDRegressorCustom(BaseRegressor):
         error = f_wb - y
 
         # Compute gradients
-        dj_dw = error * x
-        dj_db = error
+        dj_dw = (1 / m) * np.dot(x.T, error)
+        dj_db = (1 / m) * np.sum(error)
 
         # Apply regularization
         if self.regularization == "L2":
@@ -492,7 +495,7 @@ class SGDRegressorCustom(BaseRegressor):
 
         Parameters:
             x (np.ndarray): Feature matrix (m, n)
-            y (np.ndarray): Target values (m,)
+            y (np.ndarray): Target values (m, 1)
             w (np.ndarray): Weight vector (n,)
             b (float): Bias term
 
@@ -521,13 +524,15 @@ class SGDRegressorCustom(BaseRegressor):
         self,
         x : np.ndarray,
         y : np.ndarray,
+        batch_size : int = 64,
     ) -> tuple[np.ndarray, float, list[float]]:
         """
         Trains the model using Stochastic Gradient Descent (SGD).
 
         Parameters:
             x (np.ndarray): Feature matrix (m, n)
-            y (np.ndarray): Target vector (m,)
+            y (np.ndarray): Target vector (m, 1)
+            batch_size (int) : Size of each batch
 
         Returns:
             w (np.ndarray): Final learned weights
@@ -549,10 +554,10 @@ class SGDRegressorCustom(BaseRegressor):
         # Confirm logging flag
         if self.logging_flag:
             for epoch in tqdm(range(self.epochs), desc="Epoch count"):
-                w, b = self._train_one_epoch(x, y, w, b, j_history, epoch) # Run single epoch
+                w, b = self._train_one_epoch(x, y, w, b, j_history, epoch, batch_size) # Run single epoch
         else:
             for epoch in range(self.epochs):
-                w, b = self._train_one_epoch(x, y, w, b, j_history, epoch) # Run single epoch
+                w, b = self._train_one_epoch(x, y, w, b, j_history, epoch, batch_size) # Run single epoch
 
         # Set fit flag
         self.fit_flag = True
@@ -570,6 +575,7 @@ class SGDRegressorCustom(BaseRegressor):
         b: float,
         j_history: list[float],
         epoch: int,
+        batch_size : int,
     ) -> tuple[np.ndarray, float]:
         """
         Trains the model for one epoch using stochastic gradient descent.
@@ -581,16 +587,23 @@ class SGDRegressorCustom(BaseRegressor):
             b (float): Current bias term.
             j_history (list[float]): List to store loss values.
             epoch (int): Current epoch index.
+            batch_size (int) : batch size
 
         Returns:
             tuple[np.ndarray, float]: Updated weights and bias.
         """
 
         # Iterate through samples (SGD)
-        for n in range(x.shape[0]):
-            dj_dw, dj_db = self._compute_gradient(x[n], float(y[n]), w, b)
-            w = w - self.learning_rate * dj_dw
-            b = b - self.learning_rate * dj_db
+        for start in range(0, x.shape[0], batch_size):
+            end = start + batch_size
+            x_batch = x[start:end]
+            y_batch = y[start:end]
+
+            # compute gradient on batch
+            dj_dw, dj_db = self._compute_gradient(x_batch, y_batch, w, b)
+
+            w -= self.learning_rate * dj_dw
+            b -= self.learning_rate * dj_db
 
         # Record errors (optional: limit to first 10k epochs)
         if epoch < 10000:
