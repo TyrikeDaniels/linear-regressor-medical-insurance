@@ -1,10 +1,43 @@
-# linear-regression
+# linear-regressor-medical-insurance
 
 <a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
-stochastic gradient descent implementation for modeling linear data
+Implementation of linear regression and configurable logistic regression using batch and stochastic gradient descent. Dataset: [Kaggle Insurance](https://www.kaggle.com/datasets/mirichoi0218/insurance)
+
+--------
+
+## Description
+
+This project started as a personal experiment to understand gradient descent and linear models from scratch. I wanted a cloud backup for my code, and figured it could be helpful or interesting to others learning how linear and logistic regression work. Includes an example dataset (Kaggle Insurance) to try out predictions.
+
+
+_Features_
+- Implements linear regression with batch and stochastic gradient descent.
+- Can be configured for logistic regression for binary classification tasks.
+- Simple Python implementation with no external ML libraries required.
+
+
+_Why it’s useful_
+- Educational: demonstrates gradient descent updates step by step.
+- Lightweight and extendable: you can apply it to other datasets or regression problems easily.
+
+_How to run it yourself_
+- This project uses Poetry to manage dependencies and virtual environments.
+
+```
+# Install dependencies and create virtual environment
+poetry install
+
+# Activate the virtual environment
+poetry shell
+
+# Run training
+python lin_mod/modeling/train.py
+```
+
+--------
 
 ## Project Organization
 
@@ -56,6 +89,3 @@ stochastic gradient descent implementation for modeling linear data
     │
     └── plots.py                <- Code to create visualizations
 ```
-
---------
-
