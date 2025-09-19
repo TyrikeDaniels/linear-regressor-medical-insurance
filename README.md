@@ -24,6 +24,7 @@ _Why it’s useful_
 - Lightweight and extendable: you can apply it to other datasets or regression problems easily.
 
 _How to run it yourself_
+- Project scaffolding was created using cookiecutter-data-science.
 - This project uses Poetry to manage dependencies and virtual environments.
 
 ```
@@ -39,7 +40,7 @@ python lin_mod/modeling/train.py
 
 --------
 
-## Project Organization
+## Project Organization (from ccds)
 
 ```
 ├── LICENSE            <- Open-source license if one is chosen
