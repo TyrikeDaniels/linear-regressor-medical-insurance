@@ -28,6 +28,7 @@ _How to run it yourself_
 - This project uses Poetry to manage dependencies and virtual environments.
 
 ```
+# Clone repo
 # Install dependencies and create virtual environment
 poetry install
 
